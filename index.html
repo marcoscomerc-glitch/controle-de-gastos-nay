@@ -57,20 +57,21 @@ html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:va
 
 /* SUMMARY CARD */
 .summary-wrap{position:relative;margin-bottom:12px;margin-top:28px}
-.summary-card{background:linear-gradient(135deg,var(--accent),#112A70);border-radius:var(--radius);padding:20px;padding-right:130px;position:relative;overflow:hidden}
-.avatar-saldo{position:absolute;right:0;bottom:0;height:calc(100% + 28px);max-height:190px;width:auto;z-index:2;pointer-events:none;user-select:none;border-bottom-right-radius:var(--radius);filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));transition:opacity .25s}
-@media(min-width:700px){.summary-card{padding-right:180px}.avatar-saldo{max-height:260px}}
+.summary-card{background:linear-gradient(135deg,var(--accent),#112A70);border-radius:var(--radius);padding:20px;padding-right:40%;position:relative;overflow:hidden}
+.avatar-saldo{position:absolute;right:0;bottom:0;height:calc(100% + 30px);width:auto;max-width:48%;object-fit:cover;object-position:left top;z-index:2;pointer-events:none;user-select:none;border-bottom-right-radius:var(--radius);-webkit-mask-image:linear-gradient(to right,transparent 0,#000 16%);mask-image:linear-gradient(to right,transparent 0,#000 16%);filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));transition:opacity .25s}
+@media(min-width:700px){.summary-card{padding-right:260px}.avatar-saldo{max-width:300px}}
 .summary-card::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237EC8E3' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='28'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat}
 .sc-label{font-size:11px;color:#7EC8E388;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .sc-value{font-family:var(--font-num);font-size:28px;font-weight:800;color:#fff;margin:4px 0 16px;letter-spacing:-1px;transition:.3s}
 .sc-row{display:flex;gap:16px}
-.sc-acum{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;background:#050C2455;border:1px solid #7EC8E322;border-radius:10px;padding:6px 10px;margin:-8px 0 14px;font-size:11px;color:#7EC8E3AA}
+.sc-acum{display:inline-flex;flex-direction:column;gap:2px;background:#050C2455;border:1px solid #7EC8E322;border-radius:10px;padding:6px 10px;margin:-8px 0 14px;font-size:11px;color:#7EC8E3AA}
 .sc-acum b{font-family:var(--font-num);font-size:14px;font-weight:700;color:#fff}
 .sc-acum b.neg{color:var(--red)}
-.sc-acum span{white-space:nowrap}
+.sc-acum span{white-space:nowrap;display:flex;justify-content:space-between;gap:10px}
 .sc-item{flex:1}
 .sc-item .sc-label{color:#7EC8E366}
-.sc-item .sc-value{font-size:18px;margin:2px 0 0}
+.sc-item .sc-value{font-size:16px;margin:2px 0 0;white-space:nowrap}
+.sc-row{flex-wrap:wrap;gap:8px 16px}
 .sc-item.income .sc-value{color:var(--green)}
 .sc-item.expense .sc-value{color:var(--red)}
 
@@ -262,7 +263,7 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
       <p id="greeting">Olá, Nayane!</p>
     </div>
     <div class="topbar-actions">
-      <div class="drive-badge off" id="driveBadge" onclick="openDriveModal()">☁️ Drive</div>
+      <div class="drive-badge off" id="driveBadge" style="display:none!important" aria-hidden="true"></div>
       <button class="icon-btn" id="eyeBtn" onclick="toggleHide()">👁️</button>
       <button class="icon-btn" onclick="toggleTheme()">🌙</button>
     </div>
@@ -324,9 +325,9 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
       </div>
 
       <div class="tabs">
-        <div class="tab active" data-tab="mes" onclick="setTab('mes',this)">Este mês</div>
-        <div class="tab" data-tab="hoje" onclick="setTab('hoje',this)">Hoje</div>
+        <div class="tab" data-tab="hoje" onclick="setTab('hoje',this)">Dia</div>
         <div class="tab" data-tab="semana" onclick="setTab('semana',this)">Semana</div>
+        <div class="tab active" data-tab="mes" onclick="setTab('mes',this)">Mês</div>
       </div>
 
       <div class="section-title">Lançamentos</div>

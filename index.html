@@ -501,17 +501,21 @@ function hojeLocal(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimez
 
 /* ── MONTH SEL ───────────────────────────────────── */
 function buildMonthSel(){
+  // lista de 24 meses para trás até 12 meses à frente (e sempre inclui o mês aberto)
   const sel = document.getElementById('monthSel');
   sel.innerHTML = '';
-  const curYear = new Date().getFullYear();
-  for(let y = curYear; y >= curYear-1; y--){
-    for(let m = (y === curYear ? new Date().getMonth() : 11); m >= 0; m--){
-      const opt = document.createElement('option');
-      opt.value = `${y}-${m}`;
-      opt.textContent = `${MONTHS[m]} ${y}`;
-      if(m === state.curMonth && y === state.curYear) opt.selected = true;
-      sel.appendChild(opt);
-    }
+  const now = new Date();
+  const idx = (y,m) => y*12 + m;
+  const hoje = idx(now.getFullYear(), now.getMonth());
+  const atual = idx(state.curYear, state.curMonth);
+  const ini = Math.min(hoje - 24, atual), fim = Math.max(hoje + 12, atual);
+  for(let i = fim; i >= ini; i--){
+    const y = Math.floor(i/12), m = i % 12;
+    const opt = document.createElement('option');
+    opt.value = `${y}-${m}`;
+    opt.textContent = `${MONTHS[m]} ${y}`;
+    if(i === atual) opt.selected = true;
+    sel.appendChild(opt);
   }
 }
 function onMonthChange(){

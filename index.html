@@ -114,6 +114,41 @@ html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:va
 .type-btn.active.resgatar{background:var(--blue);color:#fff}
 .tx-amount.reserva{color:var(--res)}
 
+/* A PAGAR */
+.ap-alert{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--yellow);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:4px;cursor:pointer}
+.ap-alert.late{border-left-color:var(--red)}
+.ap-alert .ap-ico{font-size:22px}
+.ap-alert .ap-txt{flex:1;min-width:0}
+.ap-alert .ap-t1{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-alert .ap-t2{font-size:11px;color:var(--muted);margin-top:2px}
+.ap-page{display:none;flex-direction:column;gap:10px}
+.ap-page.active{display:flex}
+.ap-summary{display:flex;gap:10px}
+.ap-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.ap-box .v{font-family:var(--font-num);font-size:20px;font-weight:800;margin-top:4px}
+.ap-list{display:flex;flex-direction:column;gap:8px}
+.ap-group{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 2px}
+.ap-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.ap-item.late{border-color:#F8717166}
+.ap-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.ap-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.ap-badge.late{background:#F8717122;color:var(--red)}
+.ap-badge.soon{background:#FBBF2422;color:var(--yellow)}
+.ap-badge.ok{background:var(--surface2);color:var(--muted)}
+.ap-badge.paid{background:#34D39922;color:var(--green)}
+.ap-actions{display:flex;gap:6px}
+.ap-btn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+.ap-btn.pay{background:var(--green);border-color:var(--green);color:#fff}
+.ap-btn.del{color:var(--muted);padding:5px 8px}
+.opt-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px}
+.opt-row .opt-t{font-size:14px;font-weight:600}
+.opt-row .opt-s{font-size:11px;color:var(--muted);margin-top:2px}
+.prev-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 14px 14px;margin-top:10px}
+.prev-box input{background:var(--surface)}
+.parc-preview{font-size:12px;color:var(--lblue);margin-top:8px}
+.nav-badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px}
+.nav-item{position:relative}
+
 /* TABS */
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
 .tabs::-webkit-scrollbar{display:none}
@@ -238,6 +273,8 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
         <div class="arr" onclick="shiftMonth(1)">›</div>
       </div>
 
+      <div id="apAlert"></div>
+
       <div class="summary-wrap">
       <div class="summary-card">
         <div class="sc-label">Saldo do mês</div>
@@ -289,6 +326,20 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
 
       <div class="section-title">Lançamentos</div>
       <div class="tx-list" id="txList"></div>
+    </div>
+
+    <!-- A PAGAR PAGE -->
+    <div id="apPage" class="ap-page">
+      <div class="section-title" style="margin-top:8px">Contas a pagar</div>
+      <div class="ap-summary">
+        <div class="ap-box"><div class="sc-label" style="color:var(--muted)">Em aberto</div><div class="v" id="apTotal" style="color:var(--red)">R$ 0,00</div></div>
+        <div class="ap-box"><div class="sc-label" style="color:var(--muted)">Vence neste mês</div><div class="v" id="apMes" style="color:var(--yellow)">R$ 0,00</div></div>
+      </div>
+      <div class="tabs" style="margin:4px 0 0">
+        <div class="tab active" id="apTabAberto" onclick="setApTab('aberto')">Em aberto</div>
+        <div class="tab" id="apTabPagas" onclick="setApTab('pagas')">Pagas</div>
+      </div>
+      <div class="ap-list" id="apList"></div>
     </div>
 
     <!-- STATS PAGE -->
@@ -353,12 +404,13 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="navTo('home',this)"><span>🏠</span><p>Início</p></button>
+    <button class="nav-item" onclick="navTo('apagar',this)"><span>📅</span><p>A pagar</p><b class="nav-badge" id="apBadge"></b></button>
     <button class="nav-item" onclick="navTo('stats',this)"><span>📊</span><p>Análise</p></button>
     <button class="nav-item" onclick="navTo('settings',this)"><span>⚙️</span><p>Ajustes</p></button>
   </nav>
 
   <!-- FAB -->
-  <button class="fab" id="fab" onclick="openModal()">+</button>
+  <button class="fab" id="fab" onclick="state.curNav==='apagar' ? openModalPrevisto() : openModal()">+</button>
 </div>
 
 <!-- ADD TX MODAL -->
@@ -374,13 +426,34 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
     </div>
     <label>Descrição</label>
     <input type="text" id="fDesc" placeholder="Ex: Salário, Mercado...">
-    <label>Valor (R$)</label>
+    <label id="fValLabel">Valor (R$)</label>
     <input type="number" id="fVal" placeholder="0,00" step="0.01" min="0" inputmode="decimal">
     <label>Data</label>
     <input type="date" id="fDate">
     <label>Categoria</label>
     <div class="cats-grid" id="catsGrid"></div>
-    <button class="btn-submit" onclick="addLancamento()">Adicionar lançamento</button>
+    <div id="prevBlock" style="display:none">
+      <div class="opt-row">
+        <div><div class="opt-t">📅 Pagar depois</div><div class="opt-s">Vai para "A pagar" e só vira despesa quando for pago</div></div>
+        <label class="switch" style="margin:0"><input type="checkbox" id="fPrev" onchange="updPrev()"><span class="slider"></span></label>
+      </div>
+      <div class="prev-box" id="prevBox" style="display:none">
+        <label id="fPrevDateLabel">Data prevista do pagamento</label>
+        <input type="date" id="fPrevDate">
+        <div class="opt-row">
+          <div><div class="opt-t">Parcelado</div><div class="opt-s">Divide o valor total mês a mês</div></div>
+          <label class="switch" style="margin:0"><input type="checkbox" id="fParcOn" onchange="updPrev()"><span class="slider"></span></label>
+        </div>
+        <div id="parcBox" style="display:none">
+          <label>Número de parcelas</label>
+          <input type="number" id="fParc" min="2" max="60" value="2" inputmode="numeric" oninput="updPrev()">
+          <div class="parc-preview" id="parcPreview"></div>
+        </div>
+        <label>Cartão / de quem (opcional)</label>
+        <input type="text" id="fCredor" placeholder="Ex: Cartão da mãe, Empréstimo João">
+      </div>
+    </div>
+    <button class="btn-submit" id="btnAdd" onclick="addLancamento()">Adicionar lançamento</button>
   </div>
 </div>
 
@@ -418,6 +491,7 @@ const AVATARES = {
 const STORE_KEY = 'cg_lancamentos';
 const PREF_KEY  = 'cg_prefs';
 const RES_KEY   = 'cg_reservas';
+const AP_KEY    = 'cg_apagar';
 const RES_EMOJIS = ['🐷','🛟','✈️','🏠','🚗','🎓','🎁','💍'];
 const BANCOS = ['Nubank','Inter','Itaú','Bradesco','Caixa','Banco do Brasil','Santander','C6 Bank','PicPay','Mercado Pago'];
 const DRIVE_CLIENT_ID = ''; /* set via settings if user provides their own */
@@ -460,6 +534,8 @@ function loadPrefs(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY)||'{}
 function savePrefs(p){ localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 function loadRes(){ try{ return JSON.parse(localStorage.getItem(RES_KEY)||'[]'); }catch(e){return[];} }
 function saveRes(r){ localStorage.setItem(RES_KEY, JSON.stringify(r)); }
+function loadAP(){ try{ return JSON.parse(localStorage.getItem(AP_KEY)||'[]'); }catch(e){return[];} }
+function saveAP(a){ localStorage.setItem(AP_KEY, JSON.stringify(a)); }
 function hojeLocal(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
 
 /* ── INIT ────────────────────────────────────────── */
@@ -484,6 +560,8 @@ function hojeLocal(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimez
   const h = new Date().getHours();
   const g = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   document.getElementById('greeting').textContent = `${g}, Nayane! 👋`;
+
+  ['fVal','fPrevDate'].forEach(i => document.getElementById(i).addEventListener('input', updPrev));
 
   // PWA
   if('serviceWorker' in navigator){
@@ -597,6 +675,7 @@ function render(){
   document.getElementById('sc-desp').textContent  = fmt(desp);
   atualizarAvatar(rec, sobra);
   renderReservas(guard, resg);
+  renderAPagar();
 
   // health
   let score = 0, label = 'Sem receitas', color = '#8B9CC8';
@@ -742,6 +821,7 @@ function addLancamento(){
   if(!desc){ toast('Informe a descrição','error'); return; }
   if(!val || val <= 0){ toast('Informe um valor válido','error'); return; }
   if(!date){ toast('Informe a data','error'); return; }
+  if(state.txType === 'expense' && document.getElementById('fPrev').checked){ addPrevisto(desc, val, date, cat); return; }
   const data = load();
   data.push({id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), type: state.txType, desc, amount: val, date, category: cat});
   save(data);
@@ -759,10 +839,169 @@ function delTx(id, e){
   }
   if(!confirm('Remover este lançamento?')) return;
   const data = all.filter(t => t.id !== id);
+  if(alvo && alvo.apagarId){
+    const ap = loadAP(), it = ap.find(x => x.id === alvo.apagarId);
+    if(it){ it.paid = false; delete it.paidDate; delete it.txId; saveAP(ap); }
+  }
   save(data);
   render();
   toast('Removido!');
   triggerDriveAutoSync();
+}
+
+/* ── A PAGAR (PREVISTOS / PARCELADOS) ──────────── */
+var apTab = 'aberto'; // var: precisa existir já no primeiro render
+function addMeses(dateStr, k){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const alvo = new Date(y, m-1+k, 1);
+  const ultimo = new Date(alvo.getFullYear(), alvo.getMonth()+1, 0).getDate();
+  alvo.setDate(Math.min(d, ultimo));
+  return `${alvo.getFullYear()}-${String(alvo.getMonth()+1).padStart(2,'0')}-${String(alvo.getDate()).padStart(2,'0')}`;
+}
+function diasAte(dateStr){
+  return Math.round((new Date(dateStr+'T00:00') - new Date(hojeLocal()+'T00:00')) / 86400000);
+}
+function prazo(dateStr){
+  const d = diasAte(dateStr);
+  if(d < 0)  return {cls:'late', txt: `Atrasada há ${-d} dia${d===-1?'':'s'}`};
+  if(d === 0) return {cls:'late', txt:'Vence hoje'};
+  if(d === 1) return {cls:'soon', txt:'Vence amanhã'};
+  if(d <= 7)  return {cls:'soon', txt:`Vence em ${d} dias`};
+  return {cls:'ok', txt:`Em ${d} dias`};
+}
+function dataCurta(ds){ return new Date(ds+'T00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'2-digit'}); }
+function updPrev(){
+  const prev = document.getElementById('fPrev').checked;
+  const parc = document.getElementById('fParcOn').checked;
+  document.getElementById('prevBox').style.display = prev ? '' : 'none';
+  document.getElementById('parcBox').style.display = parc ? '' : 'none';
+  document.getElementById('fPrevDateLabel').textContent = parc ? 'Data da 1ª parcela' : 'Data prevista do pagamento';
+  document.getElementById('fValLabel').textContent = prev && parc ? 'Valor total (R$)' : 'Valor (R$)';
+  document.getElementById('btnAdd').textContent = prev ? 'Adicionar em A pagar' : 'Adicionar lançamento';
+  if(prev && !document.getElementById('fPrevDate').value) document.getElementById('fPrevDate').value = addMeses(hojeLocal(), 1);
+  if(parc){
+    const n = parseInt(document.getElementById('fParc').value) || 0;
+    const v = parseFloat(document.getElementById('fVal').value) || 0;
+    document.getElementById('parcPreview').textContent = (n >= 2 && v > 0)
+      ? `${n}x de ${fmt(Math.floor(v/n*100)/100)} · 1ª em ${dataCurta(document.getElementById('fPrevDate').value)}` : '';
+  }
+}
+function openModalPrevisto(){
+  openModal(); setType('expense');
+  document.getElementById('fPrev').checked = true; updPrev();
+}
+function addPrevisto(desc, total, compra, cat){
+  const due1 = document.getElementById('fPrevDate').value;
+  if(!due1){ toast('Informe a data do pagamento','error'); return; }
+  const parc = document.getElementById('fParcOn').checked;
+  const n = parc ? parseInt(document.getElementById('fParc').value) : 1;
+  if(parc && (!n || n < 2 || n > 60)){ toast('Parcelas: de 2 a 60','error'); return; }
+  const credor = document.getElementById('fCredor').value.trim();
+  const cents = Math.round(total*100), base = Math.floor(cents/n);
+  const grupo = 'g' + Date.now().toString(36);
+  const ap = loadAP();
+  for(let i = 0; i < n; i++){
+    const c = i === n-1 ? cents - base*(n-1) : base;
+    ap.push({ id: grupo + '_' + i, grupo, desc, amount: c/100, due: addMeses(due1, i), category: cat,
+      compra, credor, parcela: n > 1 ? i+1 : 0, parcelas: n > 1 ? n : 0, total: n > 1 ? total : 0, paid: false });
+  }
+  saveAP(ap);
+  closeModal(); render();
+  toast(n > 1 ? `${n} parcelas adicionadas em A pagar` : 'Conta adicionada em A pagar', 'success');
+  triggerDriveAutoSync();
+}
+function nomeConta(it){ return it.desc + (it.parcelas ? ` (${it.parcela}/${it.parcelas})` : ''); }
+function marcarPago(id){
+  const ap = loadAP(), it = ap.find(x => x.id === id); if(!it || it.paid) return;
+  if(!confirm(`Marcar "${nomeConta(it)}" como paga hoje?\nEla entra como despesa de ${fmt(it.amount)} no saldo.`)) return;
+  const data = load();
+  const txId = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const hoje = hojeLocal();
+  data.push({ id: txId, type:'expense', desc: nomeConta(it), amount: it.amount, date: hoje, category: it.category, apagarId: it.id });
+  save(data);
+  it.paid = true; it.paidDate = hoje; it.txId = txId; saveAP(ap);
+  render(); toast('Pago! Lançado como despesa','success'); triggerDriveAutoSync();
+}
+function desfazerPago(id){
+  const ap = loadAP(), it = ap.find(x => x.id === id); if(!it || !it.paid) return;
+  if(!confirm(`Desfazer o pagamento de "${nomeConta(it)}"? A despesa lançada será removida.`)) return;
+  save(load().filter(t => t.id !== it.txId));
+  it.paid = false; delete it.paidDate; delete it.txId; saveAP(ap);
+  render(); toast('Pagamento desfeito'); triggerDriveAutoSync();
+}
+function excluirConta(id){
+  let ap = loadAP(); const it = ap.find(x => x.id === id); if(!it) return;
+  if(!confirm(`Excluir "${nomeConta(it)}" de A pagar?`)) return;
+  let ids = [id];
+  const outras = it.grupo ? ap.filter(x => x.grupo === it.grupo && !x.paid && x.id !== id) : [];
+  if(outras.length && confirm(`Excluir também as outras ${outras.length} parcela${outras.length>1?'s':''} não paga${outras.length>1?'s':''} desta compra?`)) ids = ids.concat(outras.map(x => x.id));
+  saveAP(ap.filter(x => !ids.includes(x.id)));
+  render(); toast('Excluído'); triggerDriveAutoSync();
+}
+function setApTab(t){
+  apTab = t;
+  document.getElementById('apTabAberto').classList.toggle('active', t==='aberto');
+  document.getElementById('apTabPagas').classList.toggle('active', t==='pagas');
+  renderAPagar();
+}
+function apItemHtml(it){
+  const c = CATS[it.category] || CATS.Outros;
+  const pz = it.paid ? {cls:'paid', txt:'Paga em ' + dataCurta(it.paidDate)} : prazo(it.due);
+  const sub = `${it.parcelas ? `Parcela ${it.parcela}/${it.parcelas} · ` : ''}vence ${dataCurta(it.due)}${it.credor ? ' · ' + escHtml(it.credor) : ''}`;
+  const acts = it.paid
+    ? `<button class="ap-btn" onclick="desfazerPago('${it.id}')">Desfazer</button>`
+    : `<button class="ap-btn pay" onclick="marcarPago('${it.id}')">✓ Pago</button><button class="ap-btn del" onclick="excluirConta('${it.id}')" title="Excluir">🗑</button>`;
+  return `<div class="ap-item${pz.cls==='late' && !it.paid ? ' late' : ''}">
+    <div class="tx-icon" style="background:${c.color}22">${c.emoji}</div>
+    <div class="tx-info">
+      <div class="tx-desc">${escHtml(it.desc)}</div>
+      <div class="tx-date">${sub}</div>
+      <div style="margin-top:6px"><span class="ap-badge ${pz.cls}">${pz.txt}</span></div>
+    </div>
+    <div class="ap-right">
+      <div class="tx-amount expense">${fmt(it.amount)}</div>
+      <div class="ap-actions">${acts}</div>
+    </div>
+  </div>`;
+}
+function renderAPagar(){
+  const ap = loadAP();
+  const abertas = ap.filter(x => !x.paid).sort((a,b) => a.due.localeCompare(b.due));
+  const hoje = hojeLocal(), mesAtual = hoje.slice(0,7);
+  document.getElementById('apTotal').textContent = fmt(abertas.reduce((s,x) => s + x.amount, 0));
+  document.getElementById('apMes').textContent = fmt(abertas.filter(x => x.due.slice(0,7) <= mesAtual).reduce((s,x) => s + x.amount, 0));
+  // badge na aba: atrasadas + vencendo em até 3 dias
+  const urg = abertas.filter(x => diasAte(x.due) <= 3).length;
+  const bd = document.getElementById('apBadge');
+  bd.textContent = urg; bd.style.display = urg ? 'flex' : 'none';
+  // alerta na tela inicial: próxima conta atrasada ou vencendo em até 7 dias
+  const alerta = abertas.filter(x => diasAte(x.due) <= 7);
+  const al = document.getElementById('apAlert');
+  if(alerta.length){
+    const it = alerta[0], pz = prazo(it.due);
+    al.innerHTML = `<div class="ap-alert${pz.cls==='late' ? ' late' : ''}" onclick="navTo('apagar', document.querySelectorAll('.nav-item')[1])">
+      <div class="ap-ico">${pz.cls==='late' ? '🚨' : '⏰'}</div>
+      <div class="ap-txt">
+        <div class="ap-t1">${escHtml(nomeConta(it))} · ${fmt(it.amount)}</div>
+        <div class="ap-t2">${pz.txt}${alerta.length > 1 ? ` · +${alerta.length-1} conta${alerta.length>2?'s':''} vencendo` : ''}</div>
+      </div>
+      <div style="color:var(--muted);font-size:18px">›</div>
+    </div>`;
+  } else al.innerHTML = '';
+  // lista
+  const list = document.getElementById('apList');
+  if(apTab === 'pagas'){
+    const pagas = ap.filter(x => x.paid).sort((a,b) => (b.paidDate||'').localeCompare(a.paidDate||'')).slice(0,50);
+    list.innerHTML = pagas.length ? pagas.map(apItemHtml).join('')
+      : '<div class="empty"><div class="e-icon">✅</div><p>Nenhuma conta paga ainda</p></div>';
+    return;
+  }
+  if(!abertas.length){
+    list.innerHTML = '<div class="empty"><div class="e-icon">📅</div><p>Nenhuma conta a pagar.<br>Toque em + para lançar uma compra<br>parcelada ou com pagamento futuro.</p></div>';
+    return;
+  }
+  const grupos = [['Atrasadas / vence hoje', x => diasAte(x.due) <= 0], ['Próximos 7 dias', x => diasAte(x.due) > 0 && diasAte(x.due) <= 7], ['Mais para frente', x => diasAte(x.due) > 7]];
+  list.innerHTML = grupos.map(([t,f]) => { const g = abertas.filter(f); return g.length ? `<div class="ap-group">${t}</div>` + g.map(apItemHtml).join('') : ''; }).join('');
 }
 
 /* ── RESERVAS (CAIXINHAS) ───────────────────────── */
@@ -917,6 +1156,11 @@ function closeModal(e){
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('fDesc').value='';
   document.getElementById('fVal').value='';
+  document.getElementById('fPrev').checked = false;
+  document.getElementById('fParcOn').checked = false;
+  document.getElementById('fParc').value = 2;
+  document.getElementById('fCredor').value = '';
+  updPrev();
 }
 function setType(t){
   state.txType = t;
@@ -924,6 +1168,8 @@ function setType(t){
   document.getElementById('btnDesp').classList.toggle('active', t==='expense');
   state.txCat = t === 'income' ? 'Receita' : 'Moradia';
   buildCatsGrid();
+  document.getElementById('prevBlock').style.display = t === 'expense' ? '' : 'none';
+  updPrev();
 }
 function buildCatsGrid(){
   const cats = state.txType === 'income' ? INCOME_CATS : EXPENSE_CATS;
@@ -950,8 +1196,9 @@ function navTo(page, btn){
   state.curNav = page;
   document.getElementById('homePage').style.display = page==='home' ? '' : 'none';
   document.getElementById('statsPage').classList.toggle('active', page==='stats');
+  document.getElementById('apPage').classList.toggle('active', page==='apagar');
   document.getElementById('settingsPage').classList.toggle('active', page==='settings');
-  document.getElementById('fab').style.display = page==='home' ? '' : 'none';
+  document.getElementById('fab').style.display = (page==='home' || page==='apagar') ? '' : 'none';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(btn) btn.classList.add('active');
   render();
@@ -987,7 +1234,7 @@ function toast(msg, type=''){
 /* ── EXPORT / IMPORT ─────────────────────────────── */
 function exportJSON(){
   const data = load();
-  const blob = new Blob([JSON.stringify({version:2, exported: new Date().toISOString(), data, reservas: loadRes()}, null, 2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify({version:2, exported: new Date().toISOString(), data, reservas: loadRes(), apagar: loadAP()}, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `controle-gastos-${new Date().toISOString().slice(0,10)}.json`;
@@ -1005,6 +1252,7 @@ function onFileImport(e){
       if(!Array.isArray(arr)) throw new Error();
       if(!confirm(`Importar ${arr.length} lançamentos? Os dados atuais serão substituídos.`)) return;
       save(arr); if(Array.isArray(parsed.reservas)) saveRes(parsed.reservas);
+      if(Array.isArray(parsed.apagar)) saveAP(parsed.apagar);
       render(); toast(`${arr.length} lançamentos importados!`,'success');
     }catch(err){ toast('Arquivo inválido','error'); }
     e.target.value='';
@@ -1012,8 +1260,8 @@ function onFileImport(e){
   reader.readAsText(file);
 }
 function clearAll(){
-  if(!confirm('Apagar TODOS os lançamentos e caixinhas? Esta ação não pode ser desfeita.')) return;
-  save([]); saveRes([]); render(); toast('Dados apagados');
+  if(!confirm('Apagar TODOS os lançamentos, caixinhas e contas a pagar? Esta ação não pode ser desfeita.')) return;
+  save([]); saveRes([]); saveAP([]); render(); toast('Dados apagados');
 }
 
 /* ── GOOGLE DRIVE SYNC ───────────────────────────── */
@@ -1120,7 +1368,7 @@ function driveBackup(){
   badge.className = 'drive-badge syncing';
   badge.textContent = '☁️ Salvando...';
 
-  const content = JSON.stringify({version:2, saved: new Date().toISOString(), data: load(), reservas: loadRes()});
+  const content = JSON.stringify({version:2, saved: new Date().toISOString(), data: load(), reservas: loadRes(), apagar: loadAP()});
   const boundary = '-------314159265358979';
   const mime = 'application/json';
 
@@ -1185,6 +1433,7 @@ function driveRestore(){
       if(!confirm(`Restaurar ${arr.length} lançamentos do Drive? Os dados locais serão substituídos.`)) return;
       save(arr);
       if(Array.isArray(parsed.reservas)) saveRes(parsed.reservas);
+      if(Array.isArray(parsed.apagar)) saveAP(parsed.apagar);
       render();
       if(status) status.textContent = `✅ ${arr.length} lançamentos restaurados`;
       toast('Dados restaurados!','success');

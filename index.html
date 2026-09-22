@@ -64,6 +64,10 @@ html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:va
 .sc-label{font-size:11px;color:#7EC8E388;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .sc-value{font-family:var(--font-num);font-size:28px;font-weight:800;color:#fff;margin:4px 0 16px;letter-spacing:-1px;transition:.3s}
 .sc-row{display:flex;gap:16px}
+.sc-acum{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;background:#050C2455;border:1px solid #7EC8E322;border-radius:10px;padding:6px 10px;margin:-8px 0 14px;font-size:11px;color:#7EC8E3AA}
+.sc-acum b{font-family:var(--font-num);font-size:14px;font-weight:700;color:#fff}
+.sc-acum b.neg{color:var(--red)}
+.sc-acum span{white-space:nowrap}
 .sc-item{flex:1}
 .sc-item .sc-label{color:#7EC8E366}
 .sc-item .sc-value{font-size:18px;margin:2px 0 0}
@@ -279,6 +283,7 @@ input:checked+.slider:before{transform:translateX(20px);background:#fff}
       <div class="summary-card">
         <div class="sc-label">Saldo do mês</div>
         <div class="sc-value" id="sc-saldo">R$ 0,00</div>
+        <div class="sc-acum" id="sc-acum"></div>
         <div class="sc-row">
           <div class="sc-item income">
             <div class="sc-label">Receitas</div>
@@ -674,6 +679,7 @@ function render(){
   document.getElementById('sc-rec').textContent   = fmt(rec);
   document.getElementById('sc-desp').textContent  = fmt(desp);
   atualizarAvatar(rec, sobra);
+  renderAcumulado(saldo);
   renderReservas(guard, resg);
   renderAPagar();
 
@@ -847,6 +853,24 @@ function delTx(id, e){
   render();
   toast('Removido!');
   triggerDriveAutoSync();
+}
+
+/* ── SALDO ACUMULADO (carrega o saldo dos meses anteriores) ── */
+function efeitoSaldo(t){
+  if(t.type === 'income' || t.type === 'reserva_out') return t.amount;
+  return -t.amount; // expense e reserva_in
+}
+function renderAcumulado(saldoPeriodo){
+  const el = document.getElementById('sc-acum');
+  if(state.tab !== 'mes'){ el.style.display = 'none'; return; }
+  const ini = `${state.curYear}-${String(state.curMonth+1).padStart(2,'0')}-01`;
+  const anterior = Math.round(load().filter(t => t.date < ini).reduce((s,t) => s + efeitoSaldo(t), 0) * 100) / 100;
+  const acum = Math.round((anterior + saldoPeriodo) * 100) / 100;
+  if(Math.abs(anterior) < 0.005){ el.style.display = 'none'; return; }
+  const sinal = v => (v > 0 ? '+ ' : v < 0 ? '− ' : '') + fmt(Math.abs(v));
+  el.style.display = '';
+  el.innerHTML = `<span>Mês anterior <b class="${anterior < 0 ? 'neg' : ''}">${sinal(anterior)}</b></span>
+    <span>Acumulado <b class="${acum < 0 ? 'neg' : ''}">${fmt(acum)}</b></span>`;
 }
 
 /* ── A PAGAR (PREVISTOS / PARCELADOS) ──────────── */
